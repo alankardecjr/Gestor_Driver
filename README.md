@@ -46,6 +46,17 @@ O projeto busca reduzir a incerteza na tomada de decisão e oferecer uma experi�
 - configuração de veículo e combustível;
 - fluxo inicial preparado para futuras integrações com notificações e overlay.
 
+## Sprint 2 - Sistema de leitura de corridas
+
+O projeto agora possui um pipeline funcional de leitura de notificacoes,
+mantendo a inteligencia desacoplada do Android:
+
+NotificationData -> PlatformDetector -> Parsers (Uber/99/inDrive)
+-> Validator -> Corrida -> CalculadoraCorrida.
+
+Com isso, o nucleo de decisao ja pode ser testado localmente sem depender
+do app Android em execucao.
+
 ## Arquitetura do projeto
 
 O projeto está estruturado em duas frentes principais:
@@ -97,6 +108,18 @@ Gestor-Driver/
 
 ```bash
 python app/main.py
+```
+
+### Executar demo do pipeline de notificacoes
+
+```bash
+python app/notifications_demo.py
+```
+
+### Executar testes unitarios (pipeline de notificacoes)
+
+```bash
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
 ### Executar o projeto Android

@@ -1,0 +1,10 @@
+# Python cache and bytecode
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.venv/
+
+# IDE settings
+.idea/
+android-app/.idea/

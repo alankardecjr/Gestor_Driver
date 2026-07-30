@@ -1,6 +1,9 @@
+"""Enumeracoes de classificacao de rentabilidade de corrida."""
+
 from enum import Enum
 
 class Classificacao(Enum):
+    """Faixas de desempenho financeiro por corrida."""
 
     EXCELENTE = "excelente"
 
@@ -10,4 +13,4 @@ class Classificacao(Enum):
 
     BAIXA = "baixa"
 
-    RUIM = "ruim""
+    RUIM = "ruim"

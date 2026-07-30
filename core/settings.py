@@ -1,8 +1,11 @@
+"""Configuracoes de veiculo e combustivel usadas na analise de custo."""
+
 from dataclasses import dataclass
 from enum import Enum
 
 
 class Combustivel(Enum):
+    """Tipos de combustivel suportados pelo calculo."""
 
     GASOLINA = "gasolina"
 
@@ -11,6 +14,19 @@ class Combustivel(Enum):
 
 @dataclass(slots=True)
 class ConfiguracaoUsuario:
+    """Dados de perfil do motorista e parametros do veiculo.
+
+    Attributes:
+        marca: Fabricante do veiculo.
+        modelo: Modelo comercial do veiculo.
+        versao: Versao ou motorizacao do modelo.
+        ano: Ano de fabricacao/modelo.
+        consumo_gasolina: Rendimento medio com gasolina (km/l).
+        consumo_etanol: Rendimento medio com etanol (km/l).
+        preco_gasolina: Preco local da gasolina por litro.
+        preco_etanol: Preco local do etanol por litro.
+        combustivel: Combustivel atualmente utilizado no app.
+    """
 
     marca: str
 
