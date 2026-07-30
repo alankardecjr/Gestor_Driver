@@ -1,0 +1,7 @@
+EXCELENTE = 2.50
+
+BOA = 2.00
+
+REGULAR = 1.50
+
+BAIXA = 1.20
