@@ -15,11 +15,23 @@ from core.calculator import CalculadoraCorrida
 from notifications.exceptions import NotificationError
 from notifications.parser import CorridaParser
 from notifications.simulator import NotificationSimulator
+from core.settings import Combustivel, ConfiguracaoUsuario
 
 
 def main() -> None:
     parser = CorridaParser()
-    calculadora = CalculadoraCorrida()
+    configuracao = ConfiguracaoUsuario(
+        marca="Hyundai",
+        modelo="HB20",
+        versao="Platinum",
+        ano=2022,
+        consumo_gasolina=13.0,
+        consumo_etanol=9.4,
+        preco_gasolina=6.19,
+        preco_etanol=4.39,
+        combustivel=Combustivel.GASOLINA,
+    )
+    calculadora = CalculadoraCorrida(configuracao_usuario=configuracao)
 
     print("GESTOR DRIVER - DEMO NOTIFICACOES")
     print("=" * 45)
@@ -31,11 +43,13 @@ def main() -> None:
         try:
             corrida = parser.parse(notification)
             resultado = calculadora.calcular(corrida)
-            print(f"Valor: R$ {resultado['valor_total']:.2f}")
-            print(f"KM total: {resultado['km_total']:.1f}")
-            print(f"Tempo: {resultado['tempo_estimado']} min")
-            print(f"R$/KM: {resultado['valor_por_km']:.2f}")
-            print(f"Classificacao: {resultado['classificacao']}")
+            print(f"Valor: R$ {resultado.valor_total:.2f}")
+            print(f"KM total: {resultado.km_total:.1f}")
+            print(f"Tempo: {resultado.tempo_estimado} min")
+            print(f"R$/KM: {resultado.valor_por_km:.2f}")
+            print(f"Classificacao: {resultado.classificacao.name}")
+            print(f"Combustivel estimado: {resultado.combustivel_estimado:.2f} L")
+            print(f"Custo estimado: R$ {resultado.custo_combustivel:.2f}")
         except NotificationError as exc:
             print(f"Erro no parse: {exc}")
 

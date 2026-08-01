@@ -1,32 +1,53 @@
-"""Estruturas de saída para análise consolidada de corrida.
+"""Contrato oficial do resultado consolidado de uma corrida.
 
-Este módulo define o contrato de dados usado após o processamento da
-calculadora, reunindo indicadores financeiros e operacionais da corrida.
+Este modulo concentra tudo o que a interface, o historico e o futuro
+armazenamento precisam enxergar depois que uma corrida foi analisada.
 """
 
 from dataclasses import dataclass
-from core.models import Corrida
+from datetime import datetime
+from typing import Optional
+
 from core.classifier import Classificacao
+from core.models import Corrida
+
 
 @dataclass(slots=True)
 class AnaliseCorrida:
-    """Representa o resultado analítico completo de uma corrida.
+    """Resultado consolidado de uma corrida analisada.
 
     Attributes:
-        corrida: Entidade original da corrida avaliada.
-        km_total: Soma de deslocamento até o passageiro e da viagem.
-        valor_por_km: Indicador principal de rentabilidade por distancia.
-        combustivel_estimado: Litros previstos para concluir o trajeto.
-        custo_combustivel: Custo estimado de combustivel da corrida.
-        classificacao: Faixa de desempenho calculada para a corrida.
+        corrida: Entidade original recebida do parser.
+        valor_total: Valor bruto da corrida.
+        km_ate_passageiro: Distancia ate o ponto de embarque.
+        km_viagem: Distancia do trecho com passageiro.
+        tempo_estimado: Duracao prevista da corrida.
+        nota_passageiro: Nota do passageiro, quando disponivel.
+        plataforma: Nome da plataforma de origem, quando disponivel.
+        data_hora: Momento em que a analise foi gerada.
+        km_total: Distancia total considerada na analise.
+        valor_por_km: Indicador principal de rentabilidade.
+        combustivel_estimado: Litros estimados para o trajeto.
+        custo_combustivel: Custo estimado com combustivel.
+        classificacao: Classificacao oficial da corrida.
+        cor_classificacao: Cor visual associada a classificacao.
     """
 
     corrida: Corrida
 
+    valor_total: float
+    km_ate_passageiro: float
+    km_viagem: float
+    tempo_estimado: Optional[int]
+    nota_passageiro: Optional[float]
+    plataforma: Optional[str]
+    data_hora: Optional[datetime]
+
     km_total: float
     valor_por_km: float
 
-    combustivel_estimado: float
-    custo_combustivel: float
+    combustivel_estimado: Optional[float]
+    custo_combustivel: Optional[float]
 
     classificacao: Classificacao
+    cor_classificacao: str

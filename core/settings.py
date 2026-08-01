@@ -45,3 +45,17 @@ class ConfiguracaoUsuario:
     preco_etanol: float
 
     combustivel: Combustivel
+
+    def consumo_ativo(self) -> float:
+        """Retorna o consumo correspondente ao combustivel em uso."""
+        if self.combustivel == Combustivel.GASOLINA:
+            return self.consumo_gasolina
+
+        return self.consumo_etanol
+
+    def preco_ativo(self) -> float:
+        """Retorna o preco correspondente ao combustivel em uso."""
+        if self.combustivel == Combustivel.GASOLINA:
+            return self.preco_gasolina
+
+        return self.preco_etanol

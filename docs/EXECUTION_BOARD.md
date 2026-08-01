@@ -29,6 +29,12 @@ Atualize este arquivo ao final de cada sessao de desenvolvimento.
 3. Demo executavel de notificacoes criada.
 4. Documentacao de dominio no core atualizada.
 5. Roadmap detalhado de finalizacao registrado.
+6. Passo 1 da nova classificacao concluido: enum oficial, limites centralizados, cor por classificacao e teste unitario cobrindo BAIXA.
+7. Passo 2 concluido: AnaliseCorrida virou contrato oficial consolidado e a calculadora passou a retornar o objeto tipado.
+8. Passo 3 concluido: combustivel estimado e custo estimado integrados ao AnaliseCorrida com base em ConfiguracaoUsuario.
+9. Passo 4 concluido: comportamento do aplicativo formalizado como maquina de estados na especificacao.
+10. Passo 5 concluido: HistoricoCorrida, persistencia local e consulta das ultimas corridas implementados em Python.
+11. Passo 6 concluido: contrato Free/Beta/Pro implementado como camada de controle de recursos no nucleo.
 
 ## Foco da semana (sugestao)
 
