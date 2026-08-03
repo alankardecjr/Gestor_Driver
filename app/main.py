@@ -8,6 +8,8 @@ if str(PROJECT_ROOT) not in sys.path:
 from core.settings import Combustivel, ConfiguracaoUsuario
 from core.models import Corrida
 from core.calculator import CalculadoraCorrida
+from core.plans import PlanoAcesso
+from core.presentation import ModoApresentacao, PresentationModel
 
 
 def main():
@@ -34,17 +36,20 @@ def main():
     calculadora = CalculadoraCorrida(configuracao_usuario=configuracao)
 
     resultado = calculadora.calcular(corrida)
+    apresentacao = PresentationModel.criar(
+        resultado,
+        PlanoAcesso.BETA,
+        modo=ModoApresentacao.DETALHES,
+    )
 
     print("GESTOR DRIVER")
     print("-" * 30)
+    print(f"Plano: {apresentacao.plano.value}")
+    print(f"Classificacao: {apresentacao.classificacao_visual.rotulo} ({apresentacao.classificacao_visual.cor})")
+    print(f"Botao: {apresentacao.acao_detalhes}")
 
-    print(f"💰 R$ {resultado.valor_total:.2f}")
-    print(f"📍 {resultado.km_total:.1f} km")
-    print(f"⏱ {resultado.tempo_estimado} min")
-    print(f"⭐ R$/KM {resultado.valor_por_km:.2f}")
-    print(f"🟢 {resultado.classificacao.name}")
-    print(f"⛽ {resultado.combustivel_estimado:.2f} L")
-    print(f"💸 R$ {resultado.custo_combustivel:.2f}")
+    for campo in apresentacao.campos_visiveis:
+        print(f"{campo.rotulo}: {campo.texto_exibicao}")
 
 
 if __name__ == "__main__":
