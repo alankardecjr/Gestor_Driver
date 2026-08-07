@@ -1,7 +1,7 @@
 package br.com.gestordriver.model
 
 data class AnaliseCorrida(
-    val corrida: br.com.gestordriver.flow.CorridaTeste,
+    val corrida: CorridaTeste,
     val kmTotal: Double,
     val valorPorKm: Double,
     val combustivelEstimado: Double,

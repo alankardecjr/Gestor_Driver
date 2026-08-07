@@ -133,14 +133,14 @@ private fun CampoChip(campo: CampoApresentacao) {
         modifier = Modifier.border(1.dp, Color(0xFF46576B)).padding(horizontal = 10.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(text = "${campo.rotulo} ${campo.valor}", color = Color.White, fontWeight = if (campo.destaque) FontWeight.Bold else FontWeight.Normal)
+        Text(text = "${campo.titulo} ${campo.valor}", color = Color.White, fontWeight = if (campo.destaque) FontWeight.Bold else FontWeight.Normal)
     }
 }
 
 @Composable
 private fun LinhaDetalhe(campo: CampoApresentacao) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = campo.rotulo, color = Color(0xFFDDE6F2))
+        Text(text = campo.titulo, color = Color(0xFFDDE6F2))
         Text(text = campo.valor, color = Color(0xFFDDE6F2))
     }
 }
