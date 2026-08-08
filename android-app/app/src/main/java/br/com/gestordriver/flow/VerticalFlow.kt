@@ -13,7 +13,6 @@ import br.com.gestordriver.model.PresentationModel
 import br.com.gestordriver.model.RecursosPlano
 import br.com.gestordriver.ui.AppState
 
-
 object VerticalFlow {
 
     private val corridaTeste = CorridaTeste(
@@ -25,9 +24,7 @@ object VerticalFlow {
         notaPassageiro = 4.98,
     )
 
-
     private val historicoTeste = listOf(
-
         HistoricoItemPresentation(
             data = "03/08 12:00",
             plataforma = "Uber",
@@ -35,7 +32,6 @@ object VerticalFlow {
             classificacao = ClassificacaoVisual.BOA,
             corClassificacao = "#7CB342",
         ),
-
         HistoricoItemPresentation(
             data = "03/08 11:00",
             plataforma = "99",
@@ -45,96 +41,60 @@ object VerticalFlow {
         ),
     )
 
-
     fun criarEstado(
-        plano: PlanoAcesso = PlanoAcesso.BETA
+        plano: PlanoAcesso = PlanoAcesso.BETA,
     ): AppState {
 
         val analise = corridaTeste.paraAnalise()
 
-        val recursos = ControlePlano()
-            .aplicar(
-                analise,
-                plano
-            )
+        val recursos = ControlePlano().aplicar(
+            analise,
+            plano,
+        )
 
-
-        val presentationModel =
-            analise.paraPresentation(
-                plano,
-                recursos,
-                historicoTeste
-            )
-
+        val presentationModel = analise.paraPresentation(
+            plano,
+            recursos,
+            historicoTeste,
+        )
 
         return AppState(
-
             corrida = presentationModel.corrida,
-
             historico = presentationModel.historico,
-
-            historicoVisivel =
-                presentationModel.historicoVisivel,
-
-            overlayAtivo =
-                presentationModel.overlayAtivo,
-
-            notificacaoDisponivel =
-                presentationModel.notificacaoDisponivel,
-
-            seloFlutuante =
-                presentationModel.seloFlutuante,
-
-            monitorando =
-                presentationModel.monitorando,
+            historicoVisivel = presentationModel.historicoVisivel,
+            overlayAtivo = presentationModel.overlayAtivo,
+            notificacaoDisponivel = presentationModel.notificacaoDisponivel,
+            seloFlutuante = presentationModel.seloFlutuante,
+            monitorando = presentationModel.monitorando,
         )
     }
 }
 
-
-
 private fun CorridaTeste.paraAnalise(): AnaliseCorrida {
 
-
-    val kmTotal =
-        kmAtePassageiro + kmViagem
-
+    val kmTotal = kmAtePassageiro + kmViagem
 
     val valorPorKm =
-        if (kmTotal <= 0)
+        if (kmTotal <= 0) {
             0.0
-        else
+        } else {
             valorTotal / kmTotal
-
+        }
 
     val combustivelEstimado = 1.28
-
     val custoCombustivel = 7.92
-
-
-    val classificacao =
-        ClassificacaoVisual.BOA
-
+    val classificacao = ClassificacaoVisual.BOA
 
     return AnaliseCorrida(
-
         corrida = this,
-
         kmTotal = kmTotal,
-
         valorPorKm = valorPorKm,
-
         combustivelEstimado = combustivelEstimado,
-
         custoCombustivel = custoCombustivel,
-
         classificacao = classificacao,
-
         corClassificacao = "#7CB342",
     )
 }
-
-
 
 private fun AnaliseCorrida.paraPresentation(
     plano: PlanoAcesso,
@@ -142,183 +102,149 @@ private fun AnaliseCorrida.paraPresentation(
     historico: List<HistoricoItemPresentation>,
 ): PresentationModel {
 
-
     val camposCompactos = listOf(
 
         CampoApresentacao(
-            "valor_por_km",
-            "R$/KM",
-            if (recursos.exibeValorPorKm)
+            id = "valor_por_km",
+            titulo = "🛞 R$/KM",
+            valor = if (recursos.exibeValorPorKm) {
                 formatDecimal(valorPorKm, 2)
-            else
-                "🔒",
-            recursos.exibeValorPorKm,
-            true
+            } else {
+                "🔒"
+            },
+            disponivel = recursos.exibeValorPorKm,
+            destaque = true,
         ),
 
-
         CampoApresentacao(
-            "valor_total",
-            "Valor total",
-            formatMoney(corrida.valorTotal)
+            id = "valor_total",
+            titulo = "💰 R$ TOTAL",
+            valor = formatMoney(corrida.valorTotal),
         ),
 
-
         CampoApresentacao(
-            "km_total",
-            "KM total",
-            formatKm(kmTotal)
+            id = "km_total",
+            titulo = "📍 KM TOTAL",
+            valor = formatKm(kmTotal),
         ),
 
-
         CampoApresentacao(
-            "tempo_estimado",
-            "Tempo",
-            "${corrida.tempoEstimado} min"
+            id = "tempo_estimado",
+            titulo = "🕐 TEMPO",
+            valor = "${corrida.tempoEstimado} min",
         ),
 
-
         CampoApresentacao(
-            "nota_passageiro",
-            "Nota",
-            formatDecimal(corrida.notaPassageiro, 2)
-        )
+            id = "nota_passageiro",
+            titulo = "CLASSIFICAÇÃO",
+            valor = "${formatDecimal(corrida.notaPassageiro, 2)} ⭐",
+        ),
     )
-
-
 
     val camposDetalhes = listOf(
 
         CampoApresentacao(
-            "km_ate_passageiro",
-            "Passageiro",
-            formatKm(corrida.kmAtePassageiro)
+            id = "km_ate_passageiro",
+            titulo = "Passageiro",
+            valor = formatKm(corrida.kmAtePassageiro),
         ),
 
-
         CampoApresentacao(
-            "km_viagem",
-            "Destino",
-            formatKm(corrida.kmViagem)
+            id = "km_viagem",
+            titulo = "Destino",
+            valor = formatKm(corrida.kmViagem),
         ),
 
-
         CampoApresentacao(
-            "combustivel_estimado",
-            "Combustível",
-            if (recursos.exibeCombustivelEstimado)
+            id = "combustivel_estimado",
+            titulo = "Combustível",
+            valor = if (recursos.exibeCombustivelEstimado) {
                 formatLiters(combustivelEstimado)
-            else
-                "🔒",
-            recursos.exibeCombustivelEstimado
+            } else {
+                "🔒"
+            },
+            disponivel = recursos.exibeCombustivelEstimado,
         ),
 
-
         CampoApresentacao(
-            "custo_combustivel",
-            "Gasto estimado",
-            if (recursos.exibeCustoCombustivel)
+            id = "custo_combustivel",
+            titulo = "Gasto estimado",
+            valor = if (recursos.exibeCustoCombustivel) {
                 formatMoney(custoCombustivel)
-            else
-                "🔒",
-            recursos.exibeCustoCombustivel
+            } else {
+                "🔒"
+            },
+            disponivel = recursos.exibeCustoCombustivel,
         ),
 
-
         CampoApresentacao(
-            "recursos_avancados",
-            "Recursos avançados",
-            if (recursos.recursosAvancados)
+            id = "recursos_avancados",
+            titulo = "Recursos avançados",
+            valor = if (recursos.recursosAvancados) {
                 "Ativo"
-            else
-                "Bloqueado",
-            recursos.recursosAvancados
-        )
+            } else {
+                "Bloqueado"
+            },
+            disponivel = recursos.recursosAvancados,
+        ),
     )
 
-
-
     return PresentationModel(
-
         analise = this,
-
         plano = plano,
 
-
         corrida = CorridaPresentation(
-
             plano = plano,
-
             modo = ModoApresentacao.COMPACTA,
-
             classificacao = classificacao,
-
             corClassificacao = corClassificacao,
-
             acaoDetalhes = "ⓘ",
-
             camposCompactos = camposCompactos,
-
             camposDetalhes = camposDetalhes,
         ),
 
-
         historico = historico,
 
-
         modo = ModoApresentacao.COMPACTA,
-
         historicoVisivel = false,
-
         overlayAtivo = true,
-
         notificacaoDisponivel = true,
-
         seloFlutuante = false,
-
         monitorando = true,
     )
 }
 
-
-
 private fun formatDecimal(
     valor: Double,
-    casas: Int
+    casas: Int,
 ): String =
     "%.${casas}f"
         .format(valor)
         .replace(".", ",")
 
-
-
 private fun formatMoney(
-    valor: Double
+    valor: Double,
 ): String =
     "R$ %.2f"
         .format(valor)
         .replace(".", ",")
 
-
-
 private fun formatKm(
-    valor: Double
+    valor: Double,
 ): String {
 
     val texto =
-        if (valor % 1.0 == 0.0)
+        if (valor % 1.0 == 0.0) {
             "%.0f".format(valor)
-        else
+        } else {
             "%.1f".format(valor)
-
+        }
 
     return "$texto km"
 }
 
-
-
 private fun formatLiters(
-    valor: Double
+    valor: Double,
 ): String =
     "%.2f L"
         .format(valor)

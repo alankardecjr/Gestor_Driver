@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,67 +35,120 @@ import br.com.gestordriver.model.PlanoAcesso
 fun AppScreen(viewModel: AppViewModel) {
     val state = viewModel.state
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        modifier = Modifier.fillMaxSize()
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
-                    androidx.compose.ui.graphics.Brush.linearGradient(
-                        listOf(Color(0xFF101418), Color(0xFF171D25), Color(0xFF0D1117)),
+                    Brush.linearGradient(
+                        listOf(
+                            Color(0xFF101418),
+                            Color(0xFF171D25),
+                            Color(0xFF0D1117),
+                        ),
                     ),
                 )
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+
+            // Título
             Text(
                 text = "Gestor Driver",
                 color = Color.White,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Controle temporário de plano para testes
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+            ) {
                 PlanoAcesso.entries.forEach { plano ->
                     FilterChip(
                         selected = state.corrida.plano == plano,
-                        onClick = { viewModel.selecionarPlano(plano) },
-                        label = { Text(text = plano.name) },
+                        onClick = {
+                            viewModel.selecionarPlano(plano)
+                        },
+                        label = {
+                            Text(plano.name)
+                        },
                     )
                 }
             }
 
             Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1B2330)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 3.dp,
+                        color = parseColor(state.corrida.corClassificacao),
+                        shape = CardDefaults.shape,
+                    ),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF050809),
+                ),
             ) {
-                Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    LinhaCompacta(campos = state.corrida.camposCompactos, cor = state.corrida.corClassificacao)
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
 
+                    // Cabeçalho idêntico na tela compacta e expandida
+                    CabecalhoCorrida(
+                        campos = state.corrida.camposCompactos,
+                    )
+
+                    // Detalhes aparecem somente quando expandido
                     if (state.corrida.modo == ModoApresentacao.DETALHES) {
-                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            state.corrida.camposDetalhes.forEach { campo ->
-                                LinhaDetalhe(campo)
-                            }
-                        }
+                        DetalhesCorrida(
+                            campos = state.corrida.camposDetalhes,
+                        )
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = viewModel::alternarDetalhes) {
-                            Text(text = state.corrida.acaoDetalhes)
+                    // Controles
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        Button(
+                            onClick = viewModel::alternarDetalhes,
+                        ) {
+                            Text(
+                                text = if (
+                                    state.corrida.modo == ModoApresentacao.COMPACTA
+                                ) {
+                                    "↓"
+                                } else {
+                                    "↑"
+                                },
+                            )
                         }
-                        Button(onClick = viewModel::alternarHistorico) {
-                            Text(text = if (state.historicoVisivel) "Ocultar histórico" else "Histórico")
+
+                        Spacer(
+                            modifier = Modifier.width(8.dp)
+                        )
+
+                        Button(
+                            onClick = viewModel::alternarHistorico,
+                        ) {
+                            Text(
+                                text = if (state.historicoVisivel) {
+                                    "Histórico ↑"
+                                } else {
+                                    "Histórico"
+                                },
+                            )
                         }
-                        Button(onClick = viewModel::sairInterface) { Text(text = "Sair interface") }
-                        Button(onClick = viewModel::fecharApp) { Text(text = "Fechar app") }
-                        Button(onClick = viewModel::registrarNotificacao) { Text(text = "NotificationListenerService") }
-                        Button(onClick = viewModel::semNotificacao) { Text(text = "Sem notificação") }
                     }
                 }
             }
 
             if (state.historicoVisivel) {
-                HistoricoRow(state = state)
+                HistoricoRow(state)
             }
 
             if (state.seloFlutuante) {
@@ -109,54 +163,221 @@ fun AppScreen(viewModel: AppViewModel) {
 }
 
 @Composable
-private fun LinhaCompacta(campos: List<CampoApresentacao>, cor: String) {
+private fun CabecalhoCorrida(
+    campos: List<CampoApresentacao>,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Spacer(
+
+        campos.forEach { campo ->
+
+            when (campo.id) {
+
+                "valor_por_km" -> {
+                    CampoCabecalho(
+                        icone = "🛞",
+                        titulo = "R$/KM",
+                        valor = campo.valor,
+                        destaque = campo.destaque,
+                    )
+                }
+
+                "valor_total" -> {
+                    CampoCabecalho(
+                        icone = "💰",
+                        titulo = "R$ TOTAL",
+                        valor = campo.valor,
+                        destaque = false,
+                    )
+                }
+
+                "km_total" -> {
+                    CampoCabecalho(
+                        icone = "📍",
+                        titulo = "KM TOTAL",
+                        valor = campo.valor,
+                        destaque = false,
+                    )
+                }
+
+                "tempo_estimado" -> {
+                    CampoCabecalho(
+                        icone = "🕐",
+                        titulo = "TEMPO",
+                        valor = campo.valor,
+                        destaque = false,
+                    )
+                }
+
+                "nota_passageiro" -> {
+                    CampoCabecalho(
+                        icone = "⭐",
+                        titulo = "ESTRELAS",
+                        valor = campo.valor,
+                        destaque = false,
+                    )
+                }
+            }
+        }
+
+        // Informação
+        Box(
             modifier = Modifier
-                .widthIn(min = 12.dp)
-                .background(Color(android.graphics.Color.parseColor(cor)))
-                .padding(6.dp),
-        )
-        campos.forEach { campo -> CampoChip(campo) }
+                .border(
+                    width = 1.dp,
+                    color = Color.White,
+                    shape = MaterialTheme.shapes.extraLarge,
+                )
+                .padding(
+                    horizontal = 10.dp,
+                    vertical = 5.dp,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "I",
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 
 @Composable
-private fun CampoChip(campo: CampoApresentacao) {
-    Box(
-        modifier = Modifier.border(1.dp, Color(0xFF46576B)).padding(horizontal = 10.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center,
+private fun CampoCabecalho(
+    icone: String,
+    titulo: String,
+    valor: String,
+    destaque: Boolean,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = "${campo.titulo} ${campo.valor}", color = Color.White, fontWeight = if (campo.destaque) FontWeight.Bold else FontWeight.Normal)
+
+        Text(
+            text = titulo,
+            color = Color(0xFF9BE15D),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold,
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+
+            Text(
+                text = icone,
+                color = Color.White,
+            )
+
+            Text(
+                text = valor,
+                color = Color.White,
+                style = if (destaque) {
+                    MaterialTheme.typography.headlineMedium
+                } else {
+                    MaterialTheme.typography.titleMedium
+                },
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 
 @Composable
-private fun LinhaDetalhe(campo: CampoApresentacao) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text = campo.titulo, color = Color(0xFFDDE6F2))
-        Text(text = campo.valor, color = Color(0xFFDDE6F2))
+private fun DetalhesCorrida(
+    campos: List<CampoApresentacao>,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        campos.forEach { campo ->
+            LinhaDetalhe(campo)
+        }
     }
 }
 
 @Composable
-private fun HistoricoRow(state: AppState) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = "Histórico", color = Color.White, fontWeight = FontWeight.Bold)
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+private fun LinhaDetalhe(
+    campo: CampoApresentacao,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = campo.titulo,
+            color = Color(0xFFDDE6F2),
+        )
+
+        Text(
+            text = campo.valor,
+            color = Color(0xFFDDE6F2),
+            fontWeight = FontWeight.Bold,
+        )
+    }
+}
+
+@Composable
+private fun HistoricoRow(
+    state: AppState,
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+
+        Text(
+            text = "Histórico",
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+
             state.historico.forEach { item ->
-                Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF111821))) {
-                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(text = item.plataforma, color = Color.White, fontWeight = FontWeight.Bold)
-                        Text(text = item.data, color = Color(0xFFB7C3D0))
-                        Text(text = item.linhaHorizontal, color = Color(0xFFDDE6F2))
-                        Text(text = item.classificacao.name, color = Color(android.graphics.Color.parseColor(item.corClassificacao)))
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF111821),
+                    ),
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+
+                        Text(
+                            text = item.plataforma,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                        )
+
+                        Text(
+                            text = item.data,
+                            color = Color(0xFFB7C3D0),
+                        )
+
+                        Text(
+                            text = item.linhaHorizontal,
+                            color = Color(0xFFDDE6F2),
+                        )
+
+                        Text(
+                            text = item.classificacao.name,
+                            color = parseColor(item.corClassificacao),
+                        )
                     }
                 }
             }
@@ -166,9 +387,13 @@ private fun HistoricoRow(state: AppState) {
 
 @Composable
 private fun OverlayPreview() {
-    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF213040))) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF213040),
+        ),
+    ) {
         Text(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(12.dp),
             text = "Overlay ativo sobre Uber / 99 / inDrive",
             color = Color.White,
         )
@@ -177,12 +402,29 @@ private fun OverlayPreview() {
 
 @Composable
 private fun SeloFlutuante() {
-    Card(colors = CardDefaults.cardColors(containerColor = Color(0xFF2B3440))) {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF2B3440),
+        ),
+    ) {
         Text(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier.padding(
+                horizontal = 14.dp,
+                vertical = 10.dp,
+            ),
             text = "◉ Selo flutuante ativo",
             color = Color.White,
             fontWeight = FontWeight.SemiBold,
         )
+    }
+}
+
+private fun parseColor(
+    valor: String,
+): Color {
+    return try {
+        Color(android.graphics.Color.parseColor(valor))
+    } catch (_: IllegalArgumentException) {
+        Color.Green
     }
 }
