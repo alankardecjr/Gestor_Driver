@@ -32,7 +32,9 @@ import br.com.gestordriver.model.PlanoAcesso
 fun AppScreen(viewModel: AppViewModel) {
     val state = viewModel.state
 
-    Surface(modifier = Modifier.fillMaxSize()) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -48,6 +50,11 @@ fun AppScreen(viewModel: AppViewModel) {
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+
+            // =========================================================
+            // TÍTULO
+            // =========================================================
+
             Text(
                 text = "Gestor Driver",
                 color = Color.White,
@@ -55,8 +62,11 @@ fun AppScreen(viewModel: AppViewModel) {
                 fontWeight = FontWeight.SemiBold,
             )
 
-            // A classificação da corrida em andamento é representada
-            // pela borda mais grossa.
+            // =========================================================
+            // CORRIDA ATUAL
+            // Borda grossa = corrida em andamento
+            // =========================================================
+
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -69,15 +79,24 @@ fun AppScreen(viewModel: AppViewModel) {
                     containerColor = Color(0xFF050809),
                 ),
             ) {
+
                 Column(
                     modifier = Modifier.padding(8.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
+
+                    // Cabeçalho permanece igual na compacta e expandida.
                     CabecalhoCorrida(
                         campos = state.corrida.camposCompactos,
+                        onInformacao = viewModel::alternarDetalhes,
                     )
 
+                    // =================================================
+                    // DETALHES
+                    // =================================================
+
                     if (state.corrida.modo == ModoApresentacao.DETALHES) {
+
                         Text(
                             text = "Detalhes",
                             color = Color.White,
@@ -90,6 +109,10 @@ fun AppScreen(viewModel: AppViewModel) {
                         )
                     }
 
+                    // =================================================
+                    // CONTROLES
+                    // =================================================
+
                     ControlesInterface(
                         modo = state.corrida.modo,
                         historicoVisivel = state.historicoVisivel,
@@ -101,13 +124,25 @@ fun AppScreen(viewModel: AppViewModel) {
                 }
             }
 
+            // =========================================================
+            // HISTÓRICO
+            // =========================================================
+
             if (state.historicoVisivel) {
                 HistoricoRow(state)
             }
 
+            // =========================================================
+            // SELO FLUTUANTE
+            // =========================================================
+
             if (state.seloFlutuante) {
                 SeloFlutuante()
             }
+
+            // =========================================================
+            // PREVIEW DO OVERLAY
+            // =========================================================
 
             if (state.overlayAtivo) {
                 OverlayPreview()
@@ -116,16 +151,24 @@ fun AppScreen(viewModel: AppViewModel) {
     }
 }
 
+
+// =====================================================================
+// CABEÇALHO
+// =====================================================================
+
 @Composable
 private fun CabecalhoCorrida(
     campos: List<CampoApresentacao>,
+    onInformacao: () -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+
         campos.forEach { campo ->
+
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -136,19 +179,17 @@ private fun CabecalhoCorrida(
             }
         }
 
-        Box(
-            modifier = Modifier
-                .padding(start = 2.dp)
-                .border(
-                    width = 1.dp,
-                    color = Color.White,
-                    shape = MaterialTheme.shapes.extraLarge,
-                )
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            contentAlignment = Alignment.Center,
+        // =============================================================
+        // BOTÃO DE INFORMAÇÃO
+        // Agora realmente abre/fecha os detalhes.
+        // =============================================================
+
+        Button(
+            onClick = onInformacao,
+            modifier = Modifier.padding(start = 2.dp),
         ) {
             Text(
-                text = "I",
+                text = "ⓘ",
                 color = Color.White,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.Bold,
@@ -157,22 +198,120 @@ private fun CabecalhoCorrida(
     }
 }
 
+
+// =====================================================================
+// CAMPO DO CABEÇALHO
+// =====================================================================
+
 @Composable
 private fun CampoCabecalho(
     campo: CampoApresentacao,
 ) {
-    val (icone, titulo, valor) = when (campo.id) {
-        "valor_por_km" -> Triple("🛞", "R$/KM", campo.valor)
-        "valor_total" -> Triple("💰", "R$ TOTAL", campo.valor)
-        "km_total" -> Triple("📍", "KM TOTAL", campo.valor)
-        "tempo_estimado" -> Triple("🕐", "TEMPO", campo.valor)
-        "nota_passageiro" -> Triple("", "ESTRELAS", "${campo.valor} ⭐")
-        else -> Triple("", campo.titulo, campo.valor)
-    }
 
+    when (campo.id) {
+
+        // =============================================================
+        // R$/KM
+        // =============================================================
+
+        "valor_por_km" -> {
+            CabecalhoSimples(
+                icone = "🛞",
+                titulo = "R$/KM",
+                valor = campo.valor,
+                destaque = campo.destaque,
+            )
+        }
+
+        // =============================================================
+        // R$ TOTAL
+        //
+        // O valor vindo do modelo pode ser "R$ 38,00".
+        // Aqui retiramos apenas o prefixo para evitar:
+        //
+        // 💰 R$ 38,00
+        //
+        // Resultado:
+        //
+        // 💰 38,00
+        // =============================================================
+
+        "valor_total" -> {
+            CabecalhoSimples(
+                icone = "💰",
+                titulo = "R$ TOTAL",
+                valor = removerPrefixoReal(campo.valor),
+                destaque = campo.destaque,
+            )
+        }
+
+        // =============================================================
+        // KM TOTAL
+        // =============================================================
+
+        "km_total" -> {
+            CabecalhoSimples(
+                icone = "📍",
+                titulo = "KM TOTAL",
+                valor = campo.valor,
+                destaque = campo.destaque,
+            )
+        }
+
+        // =============================================================
+        // TEMPO
+        // =============================================================
+
+        "tempo_estimado" -> {
+            CabecalhoSimples(
+                icone = "🕐",
+                titulo = "TEMPO",
+                valor = campo.valor,
+                destaque = campo.destaque,
+            )
+        }
+
+        // =============================================================
+        // CLASSIFICAÇÃO / ESTRELAS
+        //
+        // A estrela é construída junto com o valor em um único Text.
+        // Isso evita que ela seja tratada como um campo separado.
+        // =============================================================
+
+        "nota_passageiro" -> {
+            CabecalhoEstrelas(
+                titulo = "ESTRELAS",
+                valor = campo.valor,
+            )
+        }
+
+        else -> {
+            CabecalhoSimples(
+                icone = "",
+                titulo = campo.titulo,
+                valor = campo.valor,
+                destaque = campo.destaque,
+            )
+        }
+    }
+}
+
+
+// =====================================================================
+// CABEÇALHO PADRÃO
+// =====================================================================
+
+@Composable
+private fun CabecalhoSimples(
+    icone: String,
+    titulo: String,
+    valor: String,
+    destaque: Boolean,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
         Text(
             text = titulo,
             color = Color(0xFFB8C5D1),
@@ -185,6 +324,7 @@ private fun CampoCabecalho(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+
             if (icone.isNotEmpty()) {
                 Text(
                     text = icone,
@@ -195,7 +335,7 @@ private fun CampoCabecalho(
             Text(
                 text = valor,
                 color = Color.White,
-                style = if (campo.destaque) {
+                style = if (destaque) {
                     MaterialTheme.typography.titleMedium
                 } else {
                     MaterialTheme.typography.bodyMedium
@@ -207,6 +347,44 @@ private fun CampoCabecalho(
     }
 }
 
+
+// =====================================================================
+// ESTRELAS
+// =====================================================================
+
+@Composable
+private fun CabecalhoEstrelas(
+    titulo: String,
+    valor: String,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+
+        Text(
+            text = titulo,
+            color = Color(0xFFB8C5D1),
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+        )
+
+        // Valor + estrela ficam juntos.
+        Text(
+            text = "$valor ⭐",
+            color = Color.White,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+        )
+    }
+}
+
+
+// =====================================================================
+// DETALHES
+// =====================================================================
+
 @Composable
 private fun DetalhesCorrida(
     campos: List<CampoApresentacao>,
@@ -217,11 +395,17 @@ private fun DetalhesCorrida(
             .padding(top = 2.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
+
         campos.forEach { campo ->
             LinhaDetalhe(campo)
         }
     }
 }
+
+
+// =====================================================================
+// LINHA DOS DETALHES
+// =====================================================================
 
 @Composable
 private fun LinhaDetalhe(
@@ -232,6 +416,7 @@ private fun LinhaDetalhe(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+
         Text(
             text = campo.titulo,
             color = Color(0xFFD0D9E2),
@@ -247,6 +432,11 @@ private fun LinhaDetalhe(
     }
 }
 
+
+// =====================================================================
+// CONTROLES
+// =====================================================================
+
 @Composable
 private fun ControlesInterface(
     modo: ModoApresentacao,
@@ -261,14 +451,30 @@ private fun ControlesInterface(
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
+
+        // =============================================================
+        // EXPANDIR / RETRAIR
+        // =============================================================
+
         Button(
             onClick = onAlternarDetalhes,
         ) {
             Text(
-                text = if (modo == ModoApresentacao.COMPACTA) "↓" else "↑",
+                text = if (
+                    modo == ModoApresentacao.COMPACTA
+                ) {
+                    "↓"
+                } else {
+                    "↑"
+                },
                 style = MaterialTheme.typography.labelMedium,
             )
         }
+
+        // =============================================================
+        // CONFIGURAÇÕES
+        // Mantido bloqueado conforme definido anteriormente.
+        // =============================================================
 
         Button(
             onClick = {},
@@ -280,6 +486,10 @@ private fun ControlesInterface(
             )
         }
 
+        // =============================================================
+        // OCULTAR
+        // =============================================================
+
         Button(
             onClick = onOcultar,
         ) {
@@ -289,6 +499,10 @@ private fun ControlesInterface(
             )
         }
 
+        // =============================================================
+        // FECHAR
+        // =============================================================
+
         Button(
             onClick = onFechar,
         ) {
@@ -297,6 +511,10 @@ private fun ControlesInterface(
                 style = MaterialTheme.typography.labelSmall,
             )
         }
+
+        // =============================================================
+        // HISTÓRICO
+        // =============================================================
 
         Button(
             onClick = onAlternarHistorico,
@@ -313,6 +531,11 @@ private fun ControlesInterface(
     }
 }
 
+
+// =====================================================================
+// HISTÓRICO
+// =====================================================================
+
 @Composable
 private fun HistoricoRow(
     state: AppState,
@@ -321,11 +544,13 @@ private fun HistoricoRow(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+
             Text(
                 text = "Histórico",
                 color = Color.White,
@@ -344,7 +569,9 @@ private fun HistoricoRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
         ) {
+
             state.historico.forEachIndexed { index, item ->
+
                 HistoricoCard(
                     item = item,
                     modifier = Modifier.weight(1f),
@@ -358,6 +585,11 @@ private fun HistoricoRow(
         }
     }
 }
+
+
+// =====================================================================
+// CARD DO HISTÓRICO
+// =====================================================================
 
 @Composable
 private fun HistoricoCard(
@@ -375,15 +607,18 @@ private fun HistoricoCard(
             containerColor = Color(0xFF111821),
         ),
     ) {
+
         Column(
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
+
                 Text(
                     text = item.plataforma,
                     color = Color.White,
@@ -405,7 +640,7 @@ private fun HistoricoCard(
             )
 
             Text(
-                text = "🛞R$/KM  💰TOTAL  📍KM  🕐TEMPO  ESTRELAS",
+                text = "🛞R$/KM  💰R$ TOTAL  📍KM TOTAL  🕐TEMPO  ESTRELAS",
                 color = Color(0xFFDDE6F2),
                 style = MaterialTheme.typography.labelSmall,
                 maxLines = 1,
@@ -420,6 +655,11 @@ private fun HistoricoCard(
         }
     }
 }
+
+
+// =====================================================================
+// OVERLAY
+// =====================================================================
 
 @Composable
 private fun OverlayPreview() {
@@ -436,6 +676,11 @@ private fun OverlayPreview() {
         )
     }
 }
+
+
+// =====================================================================
+// SELO FLUTUANTE
+// =====================================================================
 
 @Composable
 private fun SeloFlutuante() {
@@ -457,11 +702,31 @@ private fun SeloFlutuante() {
     }
 }
 
+
+// =====================================================================
+// UTILITÁRIO
+// =====================================================================
+
+private fun removerPrefixoReal(
+    valor: String,
+): String {
+    return valor
+        .removePrefix("R$")
+        .trim()
+}
+
+
+// =====================================================================
+// COR
+// =====================================================================
+
 private fun parseColor(
     valor: String,
 ): Color {
     return try {
-        Color(android.graphics.Color.parseColor(valor))
+        Color(
+            android.graphics.Color.parseColor(valor),
+        )
     } catch (_: IllegalArgumentException) {
         Color.Green
     }
